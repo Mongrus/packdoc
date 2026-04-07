@@ -32,7 +32,7 @@ function duplicate(pkg) {
 }
 
 function destroy(pkg) {
-    const name = pkg.data?.service || 'Без названия';
+    const name = pkg.data?.service?.name || 'Без названия';
     confirm({
         message: `Вы уверены, что хотите безвозвратно удалить пакет «${name}»? Это действие нельзя отменить.`,
         onConfirm: () => router.delete(route('packages.destroy', pkg.id)),
@@ -147,10 +147,10 @@ function formatDate(iso) {
                                 <!-- Type -->
                                 <td class="py-3.5 pl-5 pr-3">
                                     <span class="text-sm font-medium text-gray-900">
-                                        {{ pkg.data?.service || 'Без названия' }}
+                                        {{ pkg.data?.service?.name || 'Без названия' }}
                                     </span>
                                     <span class="block text-xs text-gray-400">
-                                        {{ pkg.data?.contractor_name }}
+                                        {{ pkg.data?.contractor?.name }}
                                     </span>
                                 </td>
 
