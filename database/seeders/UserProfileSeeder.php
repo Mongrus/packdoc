@@ -14,42 +14,19 @@ class UserProfileSeeder extends Seeder
 
     public function run(): void
     {
-        $profiles = [
-            [
-                'email' => 'test@example.com',
-                'full_name' => 'Test User',
-                'employment_type' => EmploymentType::Freelancer,
-                'default_currency' => 'USD',
-            ],
-            [
-                'email' => 'trial@example.com',
-                'full_name' => 'Trial User',
-                'company_name' => 'Trial Corp',
-                'job_title' => 'Developer',
-                'employment_type' => EmploymentType::Employee,
-                'default_currency' => 'EUR',
-            ],
-            [
-                'email' => 'paid@example.com',
-                'full_name' => 'Paid User',
-                'company_name' => 'Paid LLC',
-                'job_title' => 'CEO',
-                'address' => '123 Business St, New York, NY',
-                'tax_id' => '1234567890',
-                'phone' => '+1 555 000 1234',
-                'employment_type' => EmploymentType::Company,
-                'default_currency' => 'USD',
-            ],
-        ];
+        $user = User::where('email', 'admin@gmail.com')->first();
 
-        foreach ($profiles as $data) {
-            $email = $data['email'];
-            unset($data['email']);
-
-            $user = User::where('email', $email)->first();
-            if ($user) {
-                UserProfile::updateOrCreate(['user_id' => $user->id], $data);
-            }
+        if ($user) {
+            UserProfile::updateOrCreate(['user_id' => $user->id], [
+                'full_name'        => 'Admin',
+                'company_name'     => 'Packdock LLC',
+                'job_title'        => 'CEO',
+                'address'          => 'Москва, ул. Примерная, д. 1',
+                'tax_id'           => '7701234567',
+                'phone'            => '+7 999 123-45-67',
+                'employment_type'  => EmploymentType::Company,
+                'default_currency' => 'RUB',
+            ]);
         }
     }
 }

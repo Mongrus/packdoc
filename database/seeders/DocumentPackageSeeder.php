@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\DocumentPackageStatus;
 use App\Models\DocumentPackage;
 use App\Models\DocumentTemplate;
 use App\Models\User;
@@ -15,40 +14,35 @@ class DocumentPackageSeeder extends Seeder
 
     public function run(): void
     {
-        $users = User::all();
+        $user = User::first();
         $templates = DocumentTemplate::all();
 
-        if ($users->isEmpty() || $templates->isEmpty()) {
+        if (! $user || $templates->isEmpty()) {
             return;
         }
 
-        foreach ($users as $user) {
-            $templates->random(min(2, $templates->count()))->each(function ($template) use ($user) {
-                DocumentPackage::factory()->create([
-                    'user_id' => $user->id,
-                    'template_id' => $template->id,
-                    'status' => DocumentPackageStatus::Completed,
-                    'data' => [
-                        'fio' => $user->name,
-                        'client_name' => 'ООО «Пример»',
-                        'price' => rand(5000, 50000),
-                        'date' => now()->format('d.m.Y'),
-                        'description' => 'Услуги по договору',
-                    ],
-                    'file_path' => 'packages/' . \Str::uuid() . '.pdf',
-                ]);
-            });
+        DocumentPackage::factory()->completed()->create([
+            'user_id'     => $user->id,
+            'template_id' => $templates->firstWhere('name', 'Договор на разработку / дизайн / контент')?->id ?? $templates->first()->id,
+            'file_path'   => null,
+            'data'        => [
+                'fio'         => $user->name,
+                'client_name' => 'ООО «Вектор»',
+                'price'       => 45000,
+                'date'        => now()->subDays(5)->format('d.m.Y'),
+                'description' => 'Разработка веб-приложения',
+            ],
+        ]);
 
-            DocumentPackage::factory()->draft()->create([
-                'user_id' => $user->id,
-                'template_id' => $templates->random()->id,
-                'data' => [
-                    'fio' => $user->name,
-                    'client_name' => '',
-                    'price' => null,
-                    'date' => now()->format('d.m.Y'),
-                ],
-            ]);
-        }
+        DocumentPackage::factory()->draft()->create([
+            'user_id'     => $user->id,
+            'template_id' => $templates->firstWhere('name', 'Договор на консультацию')?->id ?? $templates->last()->id,
+            'data'        => [
+                'fio'         => $user->name,
+                'client_name' => '',
+                'price'       => null,
+                'date'        => now()->format('d.m.Y'),
+            ],
+        ]);
     }
 }

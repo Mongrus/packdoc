@@ -13,10 +13,10 @@ import { Head } from '@inertiajs/vue3';
             </h2>
         </template>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
+        <div class="py-10">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200">
+                    <div class="p-6 text-gray-700">
                         Вы успешно вошли в систему!
                     </div>
                 </div>
