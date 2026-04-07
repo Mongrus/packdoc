@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Акт выполненных работ</title>
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.6; }
+        body { font-family: 'DejaVu Sans', sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.6; }
         h1 { font-size: 1.5rem; border-bottom: 2px solid #4f46e5; padding-bottom: 8px; }
         .section { margin-top: 24px; }
         .label { font-weight: 600; color: #555; }

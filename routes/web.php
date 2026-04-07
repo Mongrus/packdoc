@@ -26,8 +26,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/packages/create', [DocumentPackageController::class, 'create'])->name('packages.create');
     Route::get('/packages/create/{category}', [DocumentPackageController::class, 'questionnaire'])->name('packages.questionnaire');
     Route::post('/packages', [DocumentPackageController::class, 'store'])->name('packages.store');
+    Route::post('/packages/preview', [DocumentPackageController::class, 'previewAll'])->name('packages.previewAll');
+    Route::post('/packages/draft', [DocumentPackageController::class, 'storeDraft'])->name('packages.storeDraft');
+    Route::get('/packages/{package}/edit', [DocumentPackageController::class, 'edit'])->name('packages.edit');
+    Route::put('/packages/{package}', [DocumentPackageController::class, 'update'])->name('packages.update');
+    Route::post('/packages/{package}/draft', [DocumentPackageController::class, 'saveDraft'])->name('packages.draft');
     Route::get('/packages/{package}/documents', [DocumentPackageController::class, 'documents'])->name('packages.documents');
     Route::get('/packages/{package}/documents/{document}', [DocumentPackageController::class, 'renderDocument'])->name('packages.document.render');
+    Route::get('/packages/{package}/documents/{document}/pdf', [DocumentPackageController::class, 'downloadPdf'])->name('packages.document.pdf');
+    Route::get('/packages/{package}/documents/{document}/preview', [DocumentPackageController::class, 'previewPdf'])->name('packages.document.preview');
     Route::post('/packages/{package}/duplicate', [DocumentPackageController::class, 'duplicate'])->name('packages.duplicate');
     Route::delete('/packages/{package}', [DocumentPackageController::class, 'destroy'])->name('packages.destroy');
 });

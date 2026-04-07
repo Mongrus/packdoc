@@ -131,28 +131,23 @@ const getIcon = (name) => icons[name] ?? fallbackIcon;
                             </div>
                         </Link>
 
-                        <!-- Disabled card -->
+                        <!-- Coming soon card -->
                         <div
                             v-else
-                            class="group/disabled relative flex flex-col rounded-2xl bg-gray-50 p-6 ring-1 ring-gray-200 opacity-60 cursor-default select-none transition hover:opacity-80"
+                            class="group relative flex flex-col rounded-2xl bg-white p-6 ring-1 ring-gray-200 transition cursor-pointer hover:shadow-md"
+                            :class="getColor(cat.name).ring"
                         >
-                            <span class="absolute top-4 right-4 inline-flex items-center rounded-full bg-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-500">
+                            <span class="absolute top-4 right-4 inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
                                 В разработке
                             </span>
 
-                            <!-- Hover overlay -->
-                            <div class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-gray-900/50 opacity-0 transition group-hover/disabled:opacity-100">
-                                <div class="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-lg">
-                                    <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17l-5.384 5.384a2.025 2.025 0 01-2.853-2.853l5.384-5.384m2.853 2.853l5.384-5.384a2.025 2.025 0 00-2.853-2.853l-5.384 5.384m2.853 2.853L8.586 9.172a2.025 2.025 0 112.853-2.853l4.831 4.831" />
-                                    </svg>
-                                    <span class="text-sm font-semibold text-gray-700">Скоро будет доступно</span>
-                                </div>
-                            </div>
-
-                            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
+                            <div
+                                class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl transition"
+                                :class="[getColor(cat.name).iconBg]"
+                            >
                                 <svg
-                                    class="h-6 w-6 text-gray-400"
+                                    class="h-6 w-6"
+                                    :class="getColor(cat.name).text"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
@@ -161,21 +156,21 @@ const getIcon = (name) => icons[name] ?? fallbackIcon;
                                 />
                             </div>
 
-                            <h3 class="mb-1.5 text-base font-bold text-gray-500">{{ cat.name }}</h3>
+                            <h3 class="mb-1.5 text-base font-bold text-gray-900">{{ cat.name }}</h3>
 
-                            <p v-if="cat.description" class="mb-4 text-sm leading-relaxed text-gray-400">
+                            <p v-if="cat.description" class="mb-4 text-sm leading-relaxed text-gray-500">
                                 {{ cat.description }}
                             </p>
 
                             <div v-if="cat.document_templates?.length" class="mt-auto">
-                                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-300">Документы в пакете</p>
+                                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Документы в пакете</p>
                                 <ul class="space-y-1.5">
                                     <li
                                         v-for="tpl in cat.document_templates"
                                         :key="tpl.id"
-                                        class="flex items-start gap-2 text-sm text-gray-400"
+                                        class="flex items-start gap-2 text-sm text-gray-600"
                                     >
-                                        <svg class="mt-0.5 h-4 w-4 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <svg class="mt-0.5 h-4 w-4 shrink-0" :class="getColor(cat.name).text" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                                         </svg>
                                         <span>{{ tpl.name }}</span>

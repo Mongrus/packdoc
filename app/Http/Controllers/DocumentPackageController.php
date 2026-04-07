@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Enums\DocumentPackageStatus;
 use App\Models\DocumentCategory;
 use App\Models\DocumentPackage;
+use App\Services\DocumentGeneratorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use Inertia\Inertia;
@@ -52,29 +54,7 @@ class DocumentPackageController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'type'                     => 'required|string|in:freelance',
-            'data.contractor_name'     => 'required|string|max:255',
-            'data.contractor_email'    => 'required|email|max:255',
-            'data.contractor_phone'    => 'nullable|string|max:50',
-            'data.client_name'         => 'required|string|max:255',
-            'data.client_email'        => 'required|email|max:255',
-            'data.service'             => 'required|string|max:255',
-            'data.service_description' => 'nullable|string|max:2000',
-            'data.price'               => 'required|string|max:100',
-            'data.date'                => 'required|date',
-        ], [
-            'data.contractor_name.required' => 'Укажите ФИО исполнителя.',
-            'data.contractor_email.required' => 'Укажите email исполнителя.',
-            'data.contractor_email.email'    => 'Введите корректный email исполнителя.',
-            'data.client_name.required'      => 'Укажите ФИО или название компании заказчика.',
-            'data.client_email.required'     => 'Укажите email заказчика.',
-            'data.client_email.email'        => 'Введите корректный email заказчика.',
-            'data.service.required'          => 'Укажите название услуги.',
-            'data.price.required'            => 'Укажите стоимость.',
-            'data.date.required'             => 'Укажите дату.',
-            'data.date.date'                 => 'Введите корректную дату.',
-        ]);
+        $validated = $this->validatePackageData($request);
 
         $package = DocumentPackage::create([
             'user_id' => $request->user()->id,
@@ -87,14 +67,94 @@ class DocumentPackageController extends Controller
             ->with('status', 'package-created');
     }
 
+    public function previewAll(Request $request, DocumentGeneratorService $generator): HttpResponse
+    {
+        $data = $this->validateDraftData($request);
+
+        return $generator->streamCombinedPdf(
+            $data['type'],
+            self::FREELANCE_DOCUMENTS,
+            $data['data'],
+        );
+    }
+
+    public function storeDraft(Request $request): RedirectResponse
+    {
+        $data = $this->validateDraftData($request);
+
+        DocumentPackage::create([
+            'user_id' => $request->user()->id,
+            'type'    => $data['type'],
+            'status'  => DocumentPackageStatus::Draft->value,
+            'data'    => $data['data'],
+        ]);
+
+        return Redirect::route('packages.index')
+            ->with('status', 'draft-saved');
+    }
+
+    private const TYPE_CATEGORY_MAP = [
+        'freelance' => 'Фриланс',
+    ];
+
+    public function edit(Request $request, DocumentPackage $package): Response
+    {
+        abort_if($package->user_id !== $request->user()->id, 403);
+
+        $categoryName = self::TYPE_CATEGORY_MAP[$package->type] ?? null;
+        abort_unless($categoryName, 404);
+
+        $category = DocumentCategory::with('documentTemplates')
+            ->where('name', $categoryName)
+            ->firstOrFail();
+
+        return Inertia::render('Packages/Questionnaire', [
+            'category' => $category,
+            'profile'  => $request->user()->profile,
+            'package'  => $package,
+        ]);
+    }
+
+    public function update(Request $request, DocumentPackage $package): RedirectResponse
+    {
+        abort_if($package->user_id !== $request->user()->id, 403);
+
+        $validated = $this->validatePackageData($request);
+
+        $package->update([
+            'status' => DocumentPackageStatus::Completed->value,
+            'data'   => $validated['data'],
+        ]);
+
+        return Redirect::route('packages.documents', $package)
+            ->with('status', 'package-updated');
+    }
+
+    public function saveDraft(Request $request, DocumentPackage $package): RedirectResponse
+    {
+        abort_if($package->user_id !== $request->user()->id, 403);
+
+        $data = $this->validateDraftData($request);
+
+        $package->update([
+            'status' => DocumentPackageStatus::Draft->value,
+            'data'   => $data['data'],
+        ]);
+
+        return Redirect::route('packages.index')
+            ->with('status', 'draft-saved');
+    }
+
     public function documents(Request $request, DocumentPackage $package): Response
     {
         abort_if($package->user_id !== $request->user()->id, 403);
 
         $docs = collect(self::FREELANCE_DOCUMENTS)->map(fn ($title, $slug) => [
-            'slug'  => $slug,
-            'title' => $title,
-            'url'   => route('packages.document.render', [$package, $slug]),
+            'slug'   => $slug,
+            'title'  => $title,
+            'url'    => route('packages.document.render', [$package, $slug]),
+            'pdfUrl'     => route('packages.document.pdf', [$package, $slug]),
+            'previewUrl' => route('packages.document.preview', [$package, $slug]),
         ])->values();
 
         return Inertia::render('Packages/Documents', [
@@ -111,6 +171,36 @@ class DocumentPackageController extends Controller
         return view("documents.{$package->type}.{$document}", [
             'data' => $package->data,
         ]);
+    }
+
+    public function downloadPdf(
+        Request $request,
+        DocumentPackage $package,
+        string $document,
+        DocumentGeneratorService $generator,
+    ): HttpResponse {
+        abort_if($package->user_id !== $request->user()->id, 403);
+        abort_unless(array_key_exists($document, self::FREELANCE_DOCUMENTS), 404);
+
+        $template = "documents.{$package->type}.{$document}";
+        $filename = "{$document}-{$package->id}";
+
+        return $generator->downloadPdf($template, $package->data, $filename);
+    }
+
+    public function previewPdf(
+        Request $request,
+        DocumentPackage $package,
+        string $document,
+        DocumentGeneratorService $generator,
+    ): HttpResponse {
+        abort_if($package->user_id !== $request->user()->id, 403);
+        abort_unless(array_key_exists($document, self::FREELANCE_DOCUMENTS), 404);
+
+        $template = "documents.{$package->type}.{$document}";
+        $filename = "{$document}-{$package->id}";
+
+        return $generator->streamPdf($template, $package->data, $filename);
     }
 
     public function duplicate(Request $request, DocumentPackage $package): RedirectResponse
@@ -136,5 +226,49 @@ class DocumentPackageController extends Controller
 
         return Redirect::route('packages.index')
             ->with('status', 'package-deleted');
+    }
+
+    private function validatePackageData(Request $request): array
+    {
+        return $request->validate([
+            'type'                     => 'required|string|in:freelance',
+            'data.contractor_name'     => 'required|string|max:255',
+            'data.contractor_email'    => 'required|email|max:255',
+            'data.contractor_phone'    => 'nullable|string|max:50',
+            'data.client_name'         => 'required|string|max:255',
+            'data.client_email'        => 'required|email|max:255',
+            'data.service'             => 'required|string|max:255',
+            'data.service_description' => 'nullable|string|max:2000',
+            'data.price'               => 'required|string|max:100',
+            'data.date'                => 'required|date',
+        ], [
+            'data.contractor_name.required'  => 'Укажите ФИО исполнителя.',
+            'data.contractor_email.required' => 'Укажите email исполнителя.',
+            'data.contractor_email.email'    => 'Введите корректный email исполнителя.',
+            'data.client_name.required'      => 'Укажите ФИО или название компании заказчика.',
+            'data.client_email.required'     => 'Укажите email заказчика.',
+            'data.client_email.email'        => 'Введите корректный email заказчика.',
+            'data.service.required'          => 'Укажите название услуги.',
+            'data.price.required'            => 'Укажите стоимость.',
+            'data.date.required'             => 'Укажите дату.',
+            'data.date.date'                 => 'Введите корректную дату.',
+        ]);
+    }
+
+    private function validateDraftData(Request $request): array
+    {
+        return $request->validate([
+            'type'                     => 'required|string|in:freelance',
+            'data'                     => 'required|array',
+            'data.contractor_name'     => 'nullable|string|max:255',
+            'data.contractor_email'    => 'nullable|email|max:255',
+            'data.contractor_phone'    => 'nullable|string|max:50',
+            'data.client_name'         => 'nullable|string|max:255',
+            'data.client_email'        => 'nullable|email|max:255',
+            'data.service'             => 'nullable|string|max:255',
+            'data.service_description' => 'nullable|string|max:2000',
+            'data.price'               => 'nullable|string|max:100',
+            'data.date'                => 'nullable|date',
+        ]);
     }
 }

@@ -3,7 +3,11 @@ import { ref, computed } from 'vue';
 import { router, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import FlashMessage from '@/Components/FlashMessage.vue';
+import ConfirmToastContainer from '@/Components/ConfirmToastContainer.vue';
+import { useConfirmToast } from '@/Composables/useConfirmToast';
 import { Head } from '@inertiajs/vue3';
+
+const { confirm } = useConfirmToast();
 
 const props = defineProps({
     packages: Object,
@@ -28,8 +32,11 @@ function duplicate(pkg) {
 }
 
 function destroy(pkg) {
-    if (!confirm('Удалить этот пакет?')) return;
-    router.delete(route('packages.destroy', pkg.id));
+    const name = pkg.data?.service || 'Без названия';
+    confirm({
+        message: `Вы уверены, что хотите безвозвратно удалить пакет «${name}»? Это действие нельзя отменить.`,
+        onConfirm: () => router.delete(route('packages.destroy', pkg.id)),
+    });
 }
 
 function formatDate(iso) {
@@ -58,6 +65,12 @@ function formatDate(iso) {
                     </FlashMessage>
                     <FlashMessage v-if="status === 'package-deleted'" type="error">
                         Пакет удалён.
+                    </FlashMessage>
+                    <FlashMessage v-if="status === 'draft-saved'" type="success">
+                        Черновик сохранён.
+                    </FlashMessage>
+                    <FlashMessage v-if="status === 'package-updated'" type="success">
+                        Пакет обновлён и документы сгенерированы.
                     </FlashMessage>
                 </div>
 
@@ -200,27 +213,36 @@ function formatDate(iso) {
                                         </span>
 
                                         <!-- Edit -->
-                                        <button
-                                            disabled
-                                            class="inline-flex cursor-not-allowed items-center gap-1 rounded-md bg-white px-2.5 py-1.5 text-xs font-medium text-gray-300 ring-1 ring-gray-100"
-                                            title="Редактирование — скоро"
+                                        <Link
+                                            v-if="pkg.status === 'draft'"
+                                            :href="route('packages.edit', pkg.id)"
+                                            class="inline-flex items-center gap-1 rounded-md bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50 transition"
                                         >
                                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
                                             </svg>
                                             Редактировать
-                                        </button>
+                                        </Link>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-300 ring-1 ring-gray-100 cursor-not-allowed"
+                                        >
+                                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+                                            </svg>
+                                            Редактировать
+                                        </span>
 
                                         <!-- Duplicate -->
                                         <button
                                             @click="duplicate(pkg)"
                                             class="inline-flex items-center gap-1 rounded-md bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50 transition"
-                                            title="Скопировать шаблон"
+                                            title="Дублировать пакет"
                                         >
                                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
                                             </svg>
-                                            Копировать
+                                            Дублировать
                                         </button>
 
                                         <!-- Delete -->
@@ -269,4 +291,6 @@ function formatDate(iso) {
             </div>
         </div>
     </AuthenticatedLayout>
+
+    <ConfirmToastContainer />
 </template>

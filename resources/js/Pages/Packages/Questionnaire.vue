@@ -1,26 +1,32 @@
 <script setup>
+import { computed, ref } from 'vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 
+const previewForm = ref(null);
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
 const props = defineProps({
     category: Object,
     profile: Object,
+    package: { type: Object, default: null },
 });
 
 const page = usePage();
+const isEditing = computed(() => !!props.package);
 
 const form = useForm({
-    type: 'freelance',
-    contractor_name: '',
-    contractor_email: '',
-    contractor_phone: '',
-    client_name: '',
-    client_email: '',
-    service: '',
-    service_description: '',
-    price: '',
-    date: '',
+    type: props.package?.type ?? 'freelance',
+    contractor_name: props.package?.data?.contractor_name ?? '',
+    contractor_email: props.package?.data?.contractor_email ?? '',
+    contractor_phone: props.package?.data?.contractor_phone ?? '',
+    client_name: props.package?.data?.client_name ?? '',
+    client_email: props.package?.data?.client_email ?? '',
+    service: props.package?.data?.service ?? '',
+    service_description: props.package?.data?.service_description ?? '',
+    price: props.package?.data?.price ?? '',
+    date: props.package?.data?.date ?? '',
 });
 
 const isDevUser = page.props.auth?.user?.id === 1;
@@ -46,8 +52,8 @@ function autofill() {
     form.date = new Date().toISOString().slice(0, 10);
 }
 
-function generate() {
-    form.transform((fields) => ({
+function buildPayload(fields) {
+    return {
         type: fields.type,
         data: {
             contractor_name: fields.contractor_name,
@@ -60,7 +66,42 @@ function generate() {
             price: fields.price,
             date: fields.date,
         },
-    })).post(route('packages.store'));
+    };
+}
+
+function generate() {
+    if (isEditing.value) {
+        form.transform(buildPayload).put(route('packages.update', props.package.id));
+    } else {
+        form.transform(buildPayload).post(route('packages.store'));
+    }
+}
+
+function openPreview() {
+    previewForm.value.submit();
+}
+
+function saveDraft() {
+    const payload = (fields) => ({
+        type: fields.type,
+        data: {
+            contractor_name: fields.contractor_name,
+            contractor_email: fields.contractor_email,
+            contractor_phone: fields.contractor_phone,
+            client_name: fields.client_name,
+            client_email: fields.client_email,
+            service: fields.service,
+            service_description: fields.service_description,
+            price: fields.price,
+            date: fields.date,
+        },
+    });
+
+    if (isEditing.value) {
+        form.transform(payload).post(route('packages.draft', props.package.id));
+    } else {
+        form.transform(payload).post(route('packages.storeDraft'));
+    }
 }
 </script>
 
@@ -80,15 +121,15 @@ function generate() {
                 <!-- Breadcrumbs -->
                 <nav class="mb-6 flex items-center gap-2 text-sm">
                     <Link
-                        :href="route('packages.create')"
+                        :href="isEditing ? route('packages.index') : route('packages.create')"
                         class="text-gray-400 hover:text-gray-600 transition"
                     >
-                        Выбор категории
+                        {{ isEditing ? 'Мои пакеты' : 'Выбор категории' }}
                     </Link>
                     <svg class="h-4 w-4 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                     </svg>
-                    <span class="font-medium text-gray-700">Заполнение пакета</span>
+                    <span class="font-medium text-gray-700">{{ isEditing ? 'Редактирование' : 'Заполнение пакета' }}</span>
                 </nav>
 
                 <div class="overflow-hidden rounded-2xl bg-white ring-1 ring-gray-200">
@@ -261,21 +302,35 @@ function generate() {
                             </fieldset>
 
                             <!-- Actions -->
-                            <div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-6">
+                            <div class="flex items-center justify-between border-t border-gray-100 pt-6">
                                 <button
                                     type="button"
-                                    disabled
-                                    class="rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-gray-200 transition disabled:cursor-not-allowed disabled:opacity-50"
+                                    @click="openPreview"
+                                    class="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-gray-200 transition hover:bg-gray-50"
                                 >
-                                    Сохранить черновик
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    Предпросмотр
                                 </button>
-                                <button
-                                    type="submit"
-                                    :disabled="form.processing"
-                                    class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    Сгенерировать
-                                </button>
+                                <div class="flex items-center gap-3">
+                                    <button
+                                        type="button"
+                                        :disabled="form.processing"
+                                        @click="saveDraft"
+                                        class="rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-gray-200 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        Сохранить черновик
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        :disabled="form.processing"
+                                        class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {{ isEditing ? 'Сохранить и сгенерировать' : 'Сгенерировать' }}
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -284,4 +339,25 @@ function generate() {
             </div>
         </div>
     </AuthenticatedLayout>
+
+    <!-- Hidden form for preview in new tab -->
+    <form
+        ref="previewForm"
+        :action="route('packages.previewAll')"
+        method="POST"
+        target="_blank"
+        class="hidden"
+    >
+        <input type="hidden" name="_token" :value="csrfToken" />
+        <input type="hidden" name="type" :value="form.type" />
+        <input type="hidden" name="data[contractor_name]" :value="form.contractor_name" />
+        <input type="hidden" name="data[contractor_email]" :value="form.contractor_email" />
+        <input type="hidden" name="data[contractor_phone]" :value="form.contractor_phone" />
+        <input type="hidden" name="data[client_name]" :value="form.client_name" />
+        <input type="hidden" name="data[client_email]" :value="form.client_email" />
+        <input type="hidden" name="data[service]" :value="form.service" />
+        <input type="hidden" name="data[service_description]" :value="form.service_description" />
+        <input type="hidden" name="data[price]" :value="form.price" />
+        <input type="hidden" name="data[date]" :value="form.date" />
+    </form>
 </template>
