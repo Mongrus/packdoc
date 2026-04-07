@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Enums\DocumentPackageStatus;
+use App\Models\DocumentCategory;
 use App\Models\DocumentPackage;
-use App\Models\DocumentTemplate;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,15 +17,27 @@ class DocumentPackageFactory extends Factory
     {
         $status = fake()->randomElement(DocumentPackageStatus::cases());
 
+        $names = [
+            'Проект для Вектор',
+            'Лендинг SmartHome',
+            'Редизайн приложения',
+            'SEO-аудит сайта',
+            'Копирайтинг блог',
+            'Логотип CaféBrew',
+            'Презентация Q2',
+            'Верстка интернет-магазина',
+        ];
+
         return [
-            'user_id' => User::factory(),
-            'template_id' => DocumentTemplate::factory(),
-            'status' => $status,
-            'data' => [
-                'fio' => fake()->name(),
-                'client_name' => fake()->company(),
-                'price' => fake()->numberBetween(1000, 100000),
-                'date' => fake()->date('d.m.Y'),
+            'user_id'     => User::factory(),
+            'name'        => fake()->randomElement($names),
+            'category_id' => DocumentCategory::factory(),
+            'status'      => $status,
+            'data'        => [
+                'fio'         => fake()->name(),
+                'client_name' => fake()->randomElement(['ООО', 'ИП', 'АО']) . ' «' . fake()->company() . '»',
+                'price'       => fake()->numberBetween(5, 200) * 1000,
+                'date'        => fake()->date('d.m.Y'),
                 'description' => fake()->sentence(),
             ],
             'file_path' => $status === DocumentPackageStatus::Completed
@@ -37,7 +49,7 @@ class DocumentPackageFactory extends Factory
     public function draft(): static
     {
         return $this->state(fn () => [
-            'status' => DocumentPackageStatus::Draft,
+            'status'    => DocumentPackageStatus::Draft,
             'file_path' => null,
         ]);
     }
@@ -45,7 +57,7 @@ class DocumentPackageFactory extends Factory
     public function completed(): static
     {
         return $this->state(fn () => [
-            'status' => DocumentPackageStatus::Completed,
+            'status'    => DocumentPackageStatus::Completed,
             'file_path' => 'packages/' . fake()->uuid() . '.pdf',
         ]);
     }

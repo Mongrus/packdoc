@@ -17,7 +17,7 @@ class DocumentPackageController extends Controller
     {
         $packages = $request->user()
             ->documentPackages()
-            ->with('template')
+            ->with('category')
             ->latest()
             ->paginate(20);
 
@@ -49,7 +49,8 @@ class DocumentPackageController extends Controller
 
         DocumentPackage::create([
             'user_id'     => $request->user()->id,
-            'template_id' => $package->template_id,
+            'name'        => $package->name . ' (копия)',
+            'category_id' => $package->category_id,
             'status'      => DocumentPackageStatus::Draft->value,
             'data'        => $package->data,
             'file_path'   => null,

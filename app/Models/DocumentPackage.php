@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'template_id', 'status', 'data', 'file_path'])]
+#[Fillable(['user_id', 'name', 'category_id', 'status', 'data', 'file_path'])]
 class DocumentPackage extends Model
 {
     /** @use HasFactory<DocumentPackageFactory> */
@@ -25,8 +25,8 @@ class DocumentPackage extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function template(): BelongsTo
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(DocumentTemplate::class, 'template_id');
+        return $this->belongsTo(DocumentCategory::class);
     }
 }

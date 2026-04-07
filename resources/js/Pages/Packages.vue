@@ -28,7 +28,7 @@ function duplicate(pkg) {
 }
 
 function destroy(pkg) {
-    if (!confirm(`Удалить пакет "${pkg.template?.name ?? '—'}"?`)) return;
+    if (!confirm(`Удалить пакет "${pkg.name}"?`)) return;
     router.delete(route('packages.destroy', pkg.id));
 }
 
@@ -112,7 +112,7 @@ function formatDate(iso) {
                                     Название
                                 </th>
                                 <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                    Тип
+                                    Категория
                                 </th>
                                 <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                                     Статус
@@ -134,21 +134,17 @@ function formatDate(iso) {
                                 <!-- Name -->
                                 <td class="py-3.5 pl-5 pr-3">
                                     <span class="text-sm font-medium text-gray-900">
-                                        {{ pkg.template?.name ?? '—' }}
+                                        {{ pkg.name }}
+                                    </span>
+                                    <span v-if="pkg.category?.name" class="block text-xs text-gray-400">
+                                        {{ pkg.category.name }}
                                     </span>
                                 </td>
 
-                                <!-- Type badge -->
+                                <!-- Category badge -->
                                 <td class="px-3 py-3.5">
-                                    <span
-                                        :class="[
-                                            'inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold uppercase',
-                                            pkg.template?.type === 'pdf'
-                                                ? 'bg-red-50 text-red-600'
-                                                : 'bg-blue-50 text-blue-600',
-                                        ]"
-                                    >
-                                        {{ pkg.template?.type ?? '—' }}
+                                    <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold bg-violet-50 text-violet-600">
+                                        {{ pkg.category?.name ?? '—' }}
                                     </span>
                                 </td>
 
