@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
+import Footer from '@/Components/Footer.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
@@ -11,8 +11,8 @@ const showingNavigationDropdown = ref(false);
 </script>
 
 <template>
-    <div>
-        <div class="min-h-screen bg-gray-100">
+    <div class="flex min-h-screen flex-col">
+        <div class="flex flex-1 flex-col bg-gray-100">
             <nav
                 class="border-b border-gray-100 bg-white"
             >
@@ -22,10 +22,12 @@ const showingNavigationDropdown = ref(false);
                         <div class="flex">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
-                                    />
+                                <Link :href="route('welcome')" class="flex items-center gap-2 text-xl font-bold text-gray-900 hover:text-indigo-600 transition-colors">
+                                    <svg class="h-7 w-7 text-indigo-600" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z" opacity=".2"/>
+                                        <path d="M20 6H4a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3Zm1 9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6ZM8 11H6a1 1 0 0 0 0 2h2a1 1 0 0 0 0-2Zm10 0h-6a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2Z"/>
+                                    </svg>
+                                    Packdock
                                 </Link>
                             </div>
 
@@ -37,7 +39,7 @@ const showingNavigationDropdown = ref(false);
                                     :href="route('dashboard')"
                                     :active="route().current('dashboard')"
                                 >
-                                    Dashboard
+                                    Личный кабинет
                                 </NavLink>
                             </div>
                         </div>
@@ -74,14 +76,14 @@ const showingNavigationDropdown = ref(false);
                                         <DropdownLink
                                             :href="route('profile.edit')"
                                         >
-                                            Profile
+                                            Основные
                                         </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"
                                             as="button"
                                         >
-                                            Log Out
+                                            Выйти
                                         </DropdownLink>
                                     </template>
                                 </Dropdown>
@@ -144,7 +146,7 @@ const showingNavigationDropdown = ref(false);
                             :href="route('dashboard')"
                             :active="route().current('dashboard')"
                         >
-                            Dashboard
+                            Личный кабинет
                         </ResponsiveNavLink>
                     </div>
 
@@ -165,14 +167,14 @@ const showingNavigationDropdown = ref(false);
 
                         <div class="mt-3 space-y-1">
                             <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
+                                Основные
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 :href="route('logout')"
                                 method="post"
                                 as="button"
                             >
-                                Log Out
+                                Выйти
                             </ResponsiveNavLink>
                         </div>
                     </div>
@@ -190,9 +192,11 @@ const showingNavigationDropdown = ref(false);
             </header>
 
             <!-- Page Content -->
-            <main>
+            <main class="flex-1">
                 <slot />
             </main>
+
+            <Footer />
         </div>
     </div>
 </template>
