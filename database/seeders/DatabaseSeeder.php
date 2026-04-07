@@ -6,6 +6,8 @@ use App\Enums\SubscriptionStatus;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\DocumentCategorySeeder;
+use Database\Seeders\UserProfileSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -36,5 +38,10 @@ class DatabaseSeeder extends Seeder
             'subscription_status' => SubscriptionStatus::Paid,
             'package_created_count' => 10,
         ]);
+
+        $this->call(UserProfileSeeder::class);
+        $this->call(DocumentCategorySeeder::class);
+        $this->call(DocumentTemplateSeeder::class);
+        $this->call(DocumentPackageSeeder::class);
     }
 }
