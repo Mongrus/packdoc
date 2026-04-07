@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'name', 'category_id', 'status', 'data', 'file_path'])]
+#[Fillable(['user_id', 'type', 'status', 'data'])]
 class DocumentPackage extends Model
 {
     /** @use HasFactory<DocumentPackageFactory> */
@@ -17,16 +17,11 @@ class DocumentPackage extends Model
 
     protected $casts = [
         'status' => DocumentPackageStatus::class,
-        'data' => 'array',
+        'data'   => 'array',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(DocumentCategory::class);
     }
 }

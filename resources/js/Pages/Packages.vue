@@ -28,7 +28,7 @@ function duplicate(pkg) {
 }
 
 function destroy(pkg) {
-    if (!confirm(`Удалить пакет "${pkg.name}"?`)) return;
+    if (!confirm('Удалить этот пакет?')) return;
     router.delete(route('packages.destroy', pkg.id));
 }
 
@@ -109,10 +109,10 @@ function formatDate(iso) {
                         <thead>
                             <tr class="bg-gray-50">
                                 <th class="py-3 pl-5 pr-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                    Название
+                                    Услуга
                                 </th>
                                 <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                    Категория
+                                    Тип
                                 </th>
                                 <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                                     Статус
@@ -131,20 +131,20 @@ function formatDate(iso) {
                                 :key="pkg.id"
                                 class="group transition hover:bg-gray-50"
                             >
-                                <!-- Name -->
+                                <!-- Type -->
                                 <td class="py-3.5 pl-5 pr-3">
                                     <span class="text-sm font-medium text-gray-900">
-                                        {{ pkg.name }}
+                                        {{ pkg.data?.service || 'Без названия' }}
                                     </span>
-                                    <span v-if="pkg.category?.name" class="block text-xs text-gray-400">
-                                        {{ pkg.category.name }}
+                                    <span class="block text-xs text-gray-400">
+                                        {{ pkg.data?.contractor_name }}
                                     </span>
                                 </td>
 
-                                <!-- Category badge -->
+                                <!-- Type badge -->
                                 <td class="px-3 py-3.5">
                                     <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold bg-violet-50 text-violet-600">
-                                        {{ pkg.category?.name ?? '—' }}
+                                        {{ pkg.type === 'freelance' ? 'Фриланс' : pkg.type }}
                                     </span>
                                 </td>
 
@@ -176,30 +176,27 @@ function formatDate(iso) {
                                 <!-- Actions -->
                                 <td class="py-3.5 pl-3 pr-5 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <!-- Preview -->
-                                        <a
-                                            v-if="pkg.file_path"
-                                            :href="pkg.file_path"
-                                            target="_blank"
+                                        <!-- Documents -->
+                                        <Link
+                                            v-if="pkg.status === 'completed'"
+                                            :href="route('packages.documents', pkg.id)"
                                             class="inline-flex items-center gap-1 rounded-md bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50 transition"
-                                            title="Просмотр файла"
                                         >
                                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.641 0-8.573-3.007-9.963-7.178z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
-                                            Просмотр
-                                        </a>
+                                            Документы
+                                        </Link>
                                         <span
                                             v-else
                                             class="inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-300 ring-1 ring-gray-100 cursor-not-allowed"
-                                            title="Файл ещё не сгенерирован"
                                         >
                                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.641 0-8.573-3.007-9.963-7.178z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
-                                            Просмотр
+                                            Документы
                                         </span>
 
                                         <!-- Edit -->

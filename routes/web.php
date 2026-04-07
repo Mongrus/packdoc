@@ -25,6 +25,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/packages', [DocumentPackageController::class, 'index'])->name('packages.index');
     Route::get('/packages/create', [DocumentPackageController::class, 'create'])->name('packages.create');
     Route::get('/packages/create/{category}', [DocumentPackageController::class, 'questionnaire'])->name('packages.questionnaire');
+    Route::post('/packages', [DocumentPackageController::class, 'store'])->name('packages.store');
+    Route::get('/packages/{package}/documents', [DocumentPackageController::class, 'documents'])->name('packages.documents');
+    Route::get('/packages/{package}/documents/{document}', [DocumentPackageController::class, 'renderDocument'])->name('packages.document.render');
     Route::post('/packages/{package}/duplicate', [DocumentPackageController::class, 'duplicate'])->name('packages.duplicate');
     Route::delete('/packages/{package}', [DocumentPackageController::class, 'destroy'])->name('packages.destroy');
 });

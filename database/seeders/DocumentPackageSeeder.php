@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\DocumentCategory;
 use App\Models\DocumentPackage;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -14,37 +13,39 @@ class DocumentPackageSeeder extends Seeder
 
     public function run(): void
     {
-        $user = User::first();
-        $freelance = DocumentCategory::where('name', 'Фриланс')->first();
+        $user = User::find(1);
 
-        if (! $user || ! $freelance) {
+        if (! $user) {
             return;
         }
 
         DocumentPackage::factory()->completed()->create([
-            'user_id'     => $user->id,
-            'name'        => 'Проект для Вектор',
-            'category_id' => $freelance->id,
-            'file_path'   => null,
-            'data'        => [
-                'fio'         => $user->name,
-                'client_name' => 'ООО «Вектор»',
-                'price'       => 45000,
-                'date'        => now()->subDays(5)->format('d.m.Y'),
-                'description' => 'Разработка веб-приложения',
+            'user_id' => $user->id,
+            'data'    => [
+                'contractor_name'     => $user->name,
+                'contractor_email'    => $user->email,
+                'contractor_phone'    => '+7 (999) 123-45-67',
+                'client_name'         => 'ООО «Вектор»',
+                'client_email'        => 'info@vektor.ru',
+                'service'             => 'Разработка веб-приложения',
+                'service_description' => 'Полный цикл: дизайн, вёрстка, backend API, деплой.',
+                'price'               => '45 000 ₽',
+                'date'                => now()->subDays(5)->format('Y-m-d'),
             ],
         ]);
 
         DocumentPackage::factory()->draft()->create([
-            'user_id'     => $user->id,
-            'name'        => 'Лендинг SmartHome',
-            'category_id' => $freelance->id,
-            'data'        => [
-                'fio'         => $user->name,
-                'client_name' => 'ИП Смирнов А.В.',
-                'price'       => 25000,
-                'date'        => now()->format('d.m.Y'),
-                'description' => 'Дизайн лендинга',
+            'user_id' => $user->id,
+            'data'    => [
+                'contractor_name'     => $user->name,
+                'contractor_email'    => $user->email,
+                'contractor_phone'    => '+7 (999) 123-45-67',
+                'client_name'         => 'ИП Смирнов А.В.',
+                'client_email'        => 'smirnov@mail.ru',
+                'service'             => 'Дизайн лендинга',
+                'service_description' => 'Лендинг SmartHome — макет в Figma + вёрстка.',
+                'price'               => '25 000 ₽',
+                'date'                => now()->format('Y-m-d'),
             ],
         ]);
     }

@@ -41,6 +41,10 @@ const currencies = [
     { value: 'AED', label: 'AED — Дирхам ОАЭ' },
 ];
 
+function isEmpty(val) {
+    return !val || !val.trim();
+}
+
 const submit = () => {
     form.put(route('user-profile.update'));
 };
@@ -66,7 +70,7 @@ const submit = () => {
                         id="full_name"
                         v-model="form.full_name"
                         type="text"
-                        class="mt-1 block w-full"
+                        :class="['mt-1 block w-full', isEmpty(form.full_name) && 'ring-2 ring-amber-300']"
                         autocomplete="name"
                         required
                     />
@@ -79,7 +83,7 @@ const submit = () => {
                         id="job_title"
                         v-model="form.job_title"
                         type="text"
-                        class="mt-1 block w-full"
+                        :class="['mt-1 block w-full', isEmpty(form.job_title) && 'ring-2 ring-amber-300']"
                     />
                     <InputError class="mt-1" :message="form.errors.job_title" />
                 </div>
@@ -118,7 +122,7 @@ const submit = () => {
                         id="phone"
                         v-model="form.phone"
                         type="tel"
-                        class="mt-1 block w-full"
+                        :class="['mt-1 block w-full', isEmpty(form.phone) && 'ring-2 ring-amber-300']"
                         autocomplete="tel"
                     />
                     <InputError class="mt-1" :message="form.errors.phone" />
@@ -130,7 +134,7 @@ const submit = () => {
                         id="address"
                         v-model="form.address"
                         type="text"
-                        class="mt-1 block w-full"
+                        :class="['mt-1 block w-full', isEmpty(form.address) && 'ring-2 ring-amber-300']"
                         autocomplete="street-address"
                     />
                     <InputError class="mt-1" :message="form.errors.address" />
@@ -152,7 +156,7 @@ const submit = () => {
                         id="company_name"
                         v-model="form.company_name"
                         type="text"
-                        class="mt-1 block w-full"
+                        :class="['mt-1 block w-full', isEmpty(form.company_name) && 'ring-2 ring-amber-300']"
                         autocomplete="organization"
                     />
                     <InputError class="mt-1" :message="form.errors.company_name" />
@@ -164,7 +168,7 @@ const submit = () => {
                         id="tax_id"
                         v-model="form.tax_id"
                         type="text"
-                        class="mt-1 block w-full"
+                        :class="['mt-1 block w-full', isEmpty(form.tax_id) && 'ring-2 ring-amber-300']"
                     />
                     <InputError class="mt-1" :message="form.errors.tax_id" />
                 </div>
